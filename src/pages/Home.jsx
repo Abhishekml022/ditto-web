@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import '../App.css'
 
 export default function Home() {
@@ -17,7 +18,7 @@ export default function Home() {
 
         <div className="home-cards">
           {/* Create New Agreement */}
-          <button className="home-card home-card--primary" onClick={() => navigate('/new')}>
+          <button className="home-card home-card--primary" onClick={() => navigate('/agreement-formats')}>
             <div className="home-card__icon">
               <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -42,7 +43,7 @@ export default function Home() {
               </svg>
             </div>
             <div className="home-card__body">
-              <div className="home-card__title">View Previous Orders</div>
+              <div className="home-card__title">My Orders</div>
               <div className="home-card__desc">Browse all previously generated agreements with their order IDs, dates, and tenant details.</div>
             </div>
             <div className="home-card__arrow">
@@ -53,6 +54,7 @@ export default function Home() {
           </button>
         </div>
       </div>
+<Footer />
     </>
   )
 }

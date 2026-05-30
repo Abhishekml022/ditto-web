@@ -28,6 +28,32 @@ export function numToWords(n) {
   return 'Rupees ' + result.trim() + ' Only'
 }
 
+// ── Date helpers ──────────────────────────────────────────────
+export function fmtDate(val) {
+  if (!val) return ''
+  const [y, m, d] = val.split('-')
+  return `${d}-${m}-${y}`
+}
+
+export function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100
+  return n + (s[(v - 20) % 10] || s[v] || s[0])
+}
+
+export function dateToWords(val) {
+  if (!val) return ''
+  const d = new Date(val + 'T00:00:00')
+  return `${ordinal(d.getDate())} day of ${d.toLocaleDateString('en-IN', { month: 'long' })} ${d.getFullYear()}`
+}
+
+export function addMonths(dateStr, months) {
+  if (!dateStr || !months) return ''
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setMonth(d.getMonth() + Number(months))
+  d.setDate(d.getDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
 // ── Generate Order ID ─────────────────────────────────────────
 export function generateOrderId() {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
