@@ -70,12 +70,6 @@ const fetchOrders = async () => {
             <h2>My Orders</h2>
             <p>All rental agreements generated through Ditto.</p>
           </div>
-          <button className="btn-action btn-next" onClick={() => navigate('/agreement-formats')}>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            New Agreement
-          </button>
         </div>
 
         {/* States */}
@@ -97,10 +91,7 @@ const fetchOrders = async () => {
             <svg width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" style={{ color: 'var(--text-muted)', margin: '0 auto' }}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
             </svg>
-            <p>No agreements found. Create your first one.</p>
-            <button className="btn-action btn-next" onClick={() => navigate('/agreement-formats')}>
-              Create Agreement
-            </button>
+            <p>No agreements found.</p>
           </div>
         )}
 
@@ -124,7 +115,7 @@ const fetchOrders = async () => {
                   <tr key={order.id}>
                     <td><div className="order-date">{formatDate(order.created_at)}</div></td>
                     <td><span className="order-badge">{order.order_id || '—'}</span></td>
-                    <td><span className="order-format-chip">{order.format === 'english-flat' ? 'DTT-002' : order.format === 'english-standard-classic' ? 'DTT-003' : 'DTT-001'}</span></td>
+                    <td><span className="order-format-chip">{order.format === 'english-flat' ? 'DTT-002' : order.format === 'english-standard-classic' ? 'DTT-003' : order.format === 'malayalam-standard' ? 'DTT-MAL-01' : 'DTT-001'}</span></td>
                     <td>
                       <div className="order-name-highlight">{order.owner_name || '—'}</div>
                       <div className="order-sub">{order.owner_address || ''}</div>

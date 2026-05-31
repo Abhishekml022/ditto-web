@@ -12,7 +12,11 @@ import {
   StepOwner, StepTenant, StepRent, StepHouse, StepFlatDetails, StepBankTerms, StepPreview,
   FORMAT_CONFIGS,
 } from './components/AgreementFormSteps'
-import { numToWords, fmtDate, dateToWords, addMonths, generateOrderId } from './utils'
+import {
+  StepOwnerMl, StepTenantMl, StepRentMl, StepHouseMl, StepPreviewMl,
+  ML_FORMAT_CONFIGS,
+} from './components/MalayalamFormSteps'
+import { numToWords, numToWordsMl, fmtDate, dateToWords, dateToWordsMl, dateToWordsMlShortYear, addMonths, generateOrderId } from './utils'
 import { getCommonFields, getSpecificFields, FORMAT_SPECIFIC } from './config/formatFields'
 
 // ── Icons ──────────────────────────────────────────────────────
@@ -45,7 +49,8 @@ export default function App() {
   const { user } = useAuth()
 
   const selectedFormat = location.state?.formatId || 'english-standard'
-  const config = FORMAT_CONFIGS[selectedFormat] || FORMAT_CONFIGS['english-standard']
+  const ALL_CONFIGS = { ...FORMAT_CONFIGS, ...ML_FORMAT_CONFIGS }
+  const config = ALL_CONFIGS[selectedFormat] || FORMAT_CONFIGS['english-standard']
   const TOTAL_STEPS = config.steps.length
 
   const [currentStep, setCurrentStep] = useState(1)
@@ -102,7 +107,64 @@ export default function App() {
       const rentPeriod = duration ? `${duration} ${Number(duration) === 1 ? 'Month' : 'Months'}` : ''
       const endDate = formData.agreement_end_date || addMonths(formData.agreement_date, duration)
 
-      const templateVars = {
+      const isMalayalam = selectedFormat.startsWith('malayalam-')
+
+      const AMENITY_ML_MAP = { Electricity: 'കറണ്ട് ചാർജ്ജ്', Water: 'വാട്ടർ ചാർജ്ജ്', 'Piped Gas': 'പൈപ്പ് ഗ്യാസ് ചാർജ്ജ്', WiFi: 'വൈഫൈ ചാർജ്ജ്' }
+      const amenitiesFinalMl = isMalayalam
+        ? [...formData.amenities_list.map((a) => AMENITY_ML_MAP[a] || a),
+           ...(formData.amenities_other_checked && formData.amenities_other ? [formData.amenities_other] : [])].join(', ')
+        : amenitiesFinal
+
+      const BUILDING_TYPE_ML_MAP = { House: 'വീട്', Building: 'കെട്ടിടം', Flat: 'ഫ്ലാറ്റ്' }
+
+      const templateVars = isMalayalam ? {
+        // Text fields: use Malayalam unicode values (fall back to English if not set)
+        owner_name: formData.owner_name_ml || formData.owner_name,
+        owner_address: formData.owner_address_ml || formData.owner_address,
+        owner_aadhaar_number: formData.owner_aadhaar ? `ആധാർ നമ്പർ: ${formData.owner_aadhaar}` : '',
+        tenant_name: formData.tenant_name_ml || formData.tenant_name,
+        tenant_address: formData.tenant_address_ml || formData.tenant_address,
+        tenant_aadhaar_number: formData.tenant_aadhaar ? `ആധാർ നമ്പർ: ${formData.tenant_aadhaar}` : '',
+        // Property fields — new Malayalam template keys
+        r_jilla: formData.r_jilla_ml || formData.r_jilla || '',
+        r_village: formData.r_village_ml || formData.r_village || '',
+        house_name: formData.house_name_ml || formData.house_name || '',
+        no_of_floors: formData.no_of_floors
+          ? (String(formData.no_of_floors) === '1' ? '1 നില' : `${formData.no_of_floors} നിലകൾ`)
+          : '',
+        rented_floor: formData.rented_floor_ml || formData.rented_floor || '',
+        building_tc_no: formData.building_tc_no || '',
+        // Keep rented_house_address for any legacy placeholders
+        rented_house_address: [
+          formData.house_name_ml || formData.house_name,
+          formData.r_village_ml || formData.r_village,
+        ].filter(Boolean).join(', '),
+        building_type: formData.building_type_ml || BUILDING_TYPE_ML_MAP[formData.building_type] || formData.building_type || '',
+        rent_purpose: formData.rent_purpose_ml || formData.rent_purpose,
+        // Dates in Malayalam — s_date_words uses short year (template already has "രണ്ടായിരത്തി")
+        agreement_date: fmtDate(formData.agreement_date),
+        s_date_words: dateToWordsMlShortYear(formData.agreement_date),
+        e_date_words: dateToWordsMlShortYear(endDate),
+        agreement_edate: fmtDate(endDate),
+        // Amounts — numbers stay numeric, words in Malayalam
+        rent: Number(formData.rent).toLocaleString('en-IN'),
+        rent_words: numToWordsMl(formData.rent),
+        advance_amt: Number(formData.advance_amt).toLocaleString('en-IN'),
+        advance_word: numToWordsMl(formData.advance_amt),
+        day_of_rent: formData.day_of_rent || '5th',
+        // Rent period: numeric and in words
+        rent_period: String(formData.duration || ''),
+        rent_period_words: numToWordsMl(formData.duration).replace(' രൂപ മാത്രം', ''),
+        duration: rentPeriod,
+        notice_period: String(formData.notice_period),
+        amenities: amenitiesFinalMl,
+        // Flat fields (empty for standard format)
+        owner_co: '', tenant_co: '', flat_no: '', floor_no: '', tower_no: '',
+        flat_name: '', flat_address: '', bhk: '', area: '',
+        occupants: `${formData.tenant_name_ml || formData.tenant_name} and family`,
+        account_name: '', account_no: '', bank_name: '', branch_name: '', bank_ifsc: '',
+        r_p_increase: '', i_period: '',
+      } : {
         agreement_date: fmtDate(formData.agreement_date),
         owner_name: formData.owner_name,
         owner_address: formData.owner_address,
@@ -145,14 +207,35 @@ export default function App() {
         i_period: formData.i_period || '',
       }
 
+      // For Malayalam format, common text fields must store the Malayalam unicode
+      // values (not English). Build a patched data object so getCommonFields picks
+      // up the ML values under the standard keys — no _ml keys go to the DB.
+      const dbData = isMalayalam ? {
+        ...formData,
+        owner_name:    formData.owner_name_ml    || formData.owner_name,
+        owner_address: formData.owner_address_ml || formData.owner_address,
+        tenant_name:   formData.tenant_name_ml   || formData.tenant_name,
+        tenant_address: formData.tenant_address_ml || formData.tenant_address,
+        rent_purpose:  formData.rent_purpose_ml  || formData.rent_purpose,
+        r_jilla:       formData.r_jilla_ml       || formData.r_jilla,
+        r_village:     formData.r_village_ml     || formData.r_village,
+        house_name:    formData.house_name_ml    || formData.house_name,
+        rented_floor:  formData.rented_floor_ml  || formData.rented_floor,
+      } : formData
+
       await addDoc(collection(db, 'orders'), {
         order_id: orderId,
         format: selectedFormat,
         uid: user?.uid || null,
         created_at: serverTimestamp(),
-        amenities: amenitiesFinal,
-        ...getCommonFields(formData),
-        ...getSpecificFields(selectedFormat, formData),
+        order_status: 0,
+        amenities: isMalayalam ? amenitiesFinalMl : amenitiesFinal,
+        ...getCommonFields(dbData),
+        // For Malayalam, only write format-specific fields that are NOT _ml variants
+        ...Object.fromEntries(
+          Object.entries(getSpecificFields(selectedFormat, dbData))
+            .filter(([key]) => !key.endsWith('_ml'))
+        ),
       })
 
       const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
@@ -174,7 +257,9 @@ export default function App() {
             ownerAddress: formData.owner_address,
             orderId,
             fileData: reader.result,
-            fileName: `Rental_Agreement_${formData.tenant_name}.docx`,
+            fileName: isMalayalam
+              ? `VadakaKaraar_${formData.owner_name}_${formData.tenant_name}.docx`
+              : `Rent_Agreement_${formData.owner_name}_${formData.tenant_name}.docx`,
             formData: { ...formData },
             selectedFormat,
           },
@@ -188,6 +273,16 @@ export default function App() {
   }
 
   const renderStep = () => {
+    if (selectedFormat === 'malayalam-standard') {
+      switch (currentStep) {
+        case 1: return <StepOwnerMl data={formData} onChange={handleChange} />
+        case 2: return <StepTenantMl data={formData} onChange={handleChange} />
+        case 3: return <StepRentMl data={formData} onChange={handleChange} />
+        case 4: return <StepHouseMl data={formData} onChange={handleChange} onAmenitiesChange={handleAmenitiesChange} />
+        case 5: return <StepPreviewMl data={formData} declared={declared} onDeclaredChange={setDeclared} />
+        default: return null
+      }
+    }
     if (selectedFormat === 'english-flat') {
       switch (currentStep) {
         case 1: return <StepOwner data={formData} onChange={handleChange} format={selectedFormat} />

@@ -35,6 +35,27 @@ export const FORMAT_SPECIFIC = {
       building_tc_no: '',
     },
   },
+  'malayalam-standard': {
+    label: 'Standard Rental Agreement (Malayalam)',
+    displayId: 'DTT-MAL-01',
+    defaults: {
+      owner_aadhaar: '',       tenant_aadhaar: '',
+      day_of_rent: '5th',     building_type: 'Building',
+      building_tc_no: '',
+      // New property fields for the Malayalam template
+      r_jilla: '',             r_jilla_ml: '',
+      r_village: '',           r_village_ml: '',
+      house_name: '',          house_name_ml: '',
+      no_of_floors: '',
+      rented_floor: '',        rented_floor_ml: '',
+      // Malayalam unicode fields (populated by MlDualInput + transliterator)
+      owner_name_ml: '',       owner_address_ml: '',
+      tenant_name_ml: '',      tenant_address_ml: '',
+      rent_purpose: 'kudumbasametham thamasikkunnathin',
+      rent_purpose_ml: 'കുടുംബസമേതം താമസിക്കുന്നതിന്',
+      building_type_ml: 'കെട്ടിടം',
+    },
+  },
   'english-flat': {
     label: 'Flat Rental Agreement',
     displayId: 'DTT-002',

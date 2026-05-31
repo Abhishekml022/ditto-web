@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import mainTemplateUrl from '../assets/templates/English_main.docx?url'
 import defaultTemplateUrl from '../assets/templates/EnglishDefault.docx?url'
 import flatTemplateUrl from '../assets/templates/English_Flat_asset.docx?url'
+import malayalamTemplateUrl from '../assets/templates/Malayalam_Rent_DTT-MAL-01.docx?url'
 import '../App.css'
 
 // ── Dummy data per template ────────────────────────────────────
@@ -74,6 +75,36 @@ const DUMMY_FLAT = {
 }
 
 // ── Template definitions ───────────────────────────────────────
+const DUMMY_MALAYALAM = {
+  // Dates
+  agreement_date: '01-06-2026',
+  s_date_words: 'ഇരുപത്തിആറാം വർഷം ജൂൺ മാസം ഒന്നാം തീയതി',
+  // Rent period
+  rent_period: '11',
+  rent_period_words: 'പതിനൊന്ന്',
+  notice_period: 'മൂന്ന് മാസം മുൻപ്',
+  // Property
+  r_village: 'തൃശ്ശൂർ',
+  building_tc_no: 'TC 14/2891-3',
+  house_name: 'ശ്രീലക്ഷ്മി ഭവൻ',
+  no_of_floors: '2',
+  rented_floor: 'ഒന്നാം നില',
+  // Owner
+  owner_name: 'രാജേഷ് കുമാർ ശർമ്മ',
+  owner_address: '12, എം.ജി. റോഡ്, കൊറമംഗല, ബെംഗളൂരു – 560034',
+  // Tenant
+  tenant_name: 'പ്രിയ വെങ്കിടരാമൻ',
+  tenant_address: '45, 2-ആം ക്രോസ്, ഇന്ദിരാനഗർ, ബെംഗളൂരു – 560038',
+  // Financials
+  rent: '18,000',
+  rent_words: 'പതിനെട്ടായിരം രൂപ മാത്രം',
+  advance_amt: '54,000',
+  advance_word: 'അൻപത്തിനാലായിരം രൂപ മാത്രം',
+  // Misc
+  rent_purpose: 'കുടുംബ താമസത്തിന്',
+  amenities: 'കറണ്ട് ചാർജ്ജ്, വാട്ടർ ചാർജ്ജ്',
+}
+
 const FORMATS = [
   {
     formatId: 'DTT-001',
@@ -89,6 +120,23 @@ const FORMATS = [
     icon: (
       <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+    ),
+  },
+  {
+    formatId: 'DTT-MAL-01',
+    id: 'malayalam-standard',
+    templateUrl: malayalamTemplateUrl,
+    dummyData: DUMMY_MALAYALAM,
+    name: 'Standard Rental Agreement (Malayalam)',
+    language: 'Malayalam',
+    badge: 'New',
+    badgeColor: '#dc2626',
+    description:
+      'Type in English, see Malayalam (Unicode) side-by-side with live transliteration. Edit the Malayalam directly before generating the document.',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 28 28">
+        <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fontSize="34" fontFamily="serif" fill="currentColor">മ</text>
       </svg>
     ),
   },
@@ -179,11 +227,26 @@ function useDocxPreview(format) {
           })
         }
 
-        // Center the "RENTAL AGREEMENT" heading
+        // Center the "RENTAL AGREEMENT" heading (English templates)
         cleaned = cleaned.replace(
           /<p([^>]*)>((?:<[^>]+>)*\s*RENTAL AGREEMENT\s*(?:<\/[^>]+>)*)<\/p>/i,
           '<p$1 style="text-align:center">$2</p>'
         )
+
+        // Center the Malayalam heading (വാടക കരാർ / any all-caps Malayalam heading paragraph)
+        if (format.id === 'malayalam-standard') {
+          cleaned = cleaned.replace(
+            /<p([^>]*)>((?:<(?:strong|b)[^>]*>)[^<]*(?:<\/(?:strong|b)>))<\/p>/gi,
+            (match, attrs, inner) => {
+              const text = stripTags(inner).trim()
+              // Target short bold-only paragraphs that are the document title
+              if (text.length > 0 && text.length < 60 && !text.includes('\n')) {
+                return `<p${attrs} style="text-align:center">${inner}</p>`
+              }
+              return match
+            }
+          )
+        }
 
         if (!cancelled) setHtml(cleaned)
       } catch (err) {
@@ -358,7 +421,7 @@ export default function AgreementFormats() {
             <div className="format-card-body">
               <div className="format-card-name" style={{ color: '#94a3b8' }}>More Formats Coming Soon</div>
               <div className="format-card-desc" style={{ color: '#cbd5e1' }}>
-                Additional formats including Malayalam, Hindi, and commercial lease agreements are being prepared.
+                Additional formats including Hindi and commercial lease agreements are being prepared.
               </div>
             </div>
             <div className="format-coming-soon-pill">Coming Soon</div>

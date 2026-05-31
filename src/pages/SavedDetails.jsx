@@ -69,12 +69,6 @@ export default function SavedDetails() {
             <h2>Saved Orders</h2>
             <p>Reuse saved agreement details to quickly create new agreements.</p>
           </div>
-          <button className="btn-action btn-next" onClick={() => navigate('/agreement-formats')}>
-            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            New Agreement
-          </button>
         </div>
 
         {loading ? (

@@ -14,7 +14,11 @@ export default function Success() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const tenantName = state?.tenantName || 'the tenant'
+  const formData = state?.formData
+  const selectedFormat = state?.selectedFormat
+  const isMalayalam = selectedFormat === 'malayalam-standard'
+
+  const tenantName = (isMalayalam ? formData?.tenant_name_ml : null) || state?.tenantName || 'the tenant'
   const orderId = state?.orderId
   const fileData = state?.fileData
   const fileName = state?.fileName || 'Rental_Agreement.docx'
@@ -23,8 +27,6 @@ export default function Success() {
   const tenantAddress = state?.tenantAddress || ''
   const tenantMobile = state?.formData?.tenant_mobile || ''
   const stampPaperAmount = state?.formData?.stamp_paper_amount || '500'
-  const formData = state?.formData
-  const selectedFormat = state?.selectedFormat
 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -133,7 +135,7 @@ export default function Success() {
           </div>
 
           {/* ── Right: Stamp paper card ── */}
-          {(ownerName || tenantName) && (
+          {!isMalayalam && (ownerName || tenantName) && (
             <div className="success-stamppaper-card">
               <div className="success-stamppaper-header">
                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

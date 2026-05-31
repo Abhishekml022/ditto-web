@@ -36,7 +36,12 @@ export function StepOwner({ data, onChange, format }) {
           <div className="input-block">
             <label>Owner Aadhaar <span className="optional-tag">(Optional)</span></label>
             <input type="text" name="owner_aadhaar" value={data.owner_aadhaar || ''}
-              onChange={onChange} maxLength={14} placeholder="e.g. 0000 0000 0000" />
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 12)
+                const formatted = digits.replace(/(.{4})/g, '$1 ').trim()
+                onChange({ target: { name: 'owner_aadhaar', value: formatted } })
+              }}
+              maxLength={14} placeholder="e.g. 0000 0000 0000" />
           </div>
         )}
         <div className="input-block span-2">
@@ -73,7 +78,12 @@ export function StepTenant({ data, onChange, format }) {
           <div className="input-block">
             <label>Tenant Aadhaar <span className="optional-tag">(Optional)</span></label>
             <input type="text" name="tenant_aadhaar" value={data.tenant_aadhaar || ''}
-              onChange={onChange} maxLength={14} placeholder="e.g. 0000 0000 0000" />
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 12)
+                const formatted = digits.replace(/(.{4})/g, '$1 ').trim()
+                onChange({ target: { name: 'tenant_aadhaar', value: formatted } })
+              }}
+              maxLength={14} placeholder="e.g. 0000 0000 0000" />
           </div>
         )}
         <div className="input-block span-2">
